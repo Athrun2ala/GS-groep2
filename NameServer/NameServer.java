@@ -1,9 +1,12 @@
 package NameServer;
 
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.TreeMap;
-public class NameServer implements aNameServer { 
+public class NameServer extends UnicastRemoteObject implements aNameServer { 
+	private static final long serialVersionUID = 1L;
 	private TreeMap<Integer, String> NodeList = new TreeMap<Integer,String>();
-	public NameServer(){};
+	public NameServer() throws RemoteException{};
 	
 	/**
 	 * Add new node to NodeList(treemap)

@@ -16,7 +16,7 @@ public class NameServerTest {
 		}
 		catch(Exception e)
 		{
-			
+			System.out.println("failed");
 		}
 	}
 
