@@ -1,32 +1,29 @@
 package NameServer;
 
+import java.net.InetAddress;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.TreeMap;
 public class NameServer extends UnicastRemoteObject implements aNameServer { 
 	private static final long serialVersionUID = 1L;
-	private TreeMap<Integer, String> NodeList = new TreeMap<Integer,String>();
+	private TreeMap<Integer, InetAddress> NodeList = new TreeMap<Integer,InetAddress>();
 	public NameServer() throws RemoteException{};
-	
+
 	/**
 	 * Add new node to NodeList(treemap)
 	 * @param address	String ipaddress
 	 * @throws Exception	Exception if allready in list
 	 */
-	public void addNode(String address) 
+	public void addNode(InetAddress address,String Naam) 
 	{
 		Hasher myHasher = new Hasher();
-		int nodeID = myHasher.Hash(address);
-		if(!NodeList.containsValue(address))
+		int nodeID = myHasher.Hash(Naam);
+		if(!NodeList.containsKey(nodeID)&&!NodeList.containsValue(address))
 		{
 			NodeList.put(nodeID, address);
 		}
-		else
-		{
-			System.out.println("Node allready in list!");
-		}
 	}
-	
+
 	/**
 	 * Delete node with specified ID
 	 * @param anID	The nodeID
@@ -39,16 +36,16 @@ public class NameServer extends UnicastRemoteObject implements aNameServer {
 		}
 		else
 		{
-			
+			//do nothing
 		}
 	}
-	
+
 	/**
 	 * Find the IP address of the node that has the specified file
 	 * @param FileName name of the file that has to be found
 	 * @return null if no nodes in the system, else return IP address of the node.
 	 */
-	public String getLocation(String FileName)
+	public InetAddress getLocation(String FileName)
 	{
 		if (NodeList.isEmpty())
 		{
@@ -62,6 +59,11 @@ public class NameServer extends UnicastRemoteObject implements aNameServer {
 			NodeID = NodeList.firstKey();
 		}
 		return NodeList.get(NodeID);
+	}
+
+	public Integer getSize()
+	{
+		return NodeList.size();
 	}
 
 }

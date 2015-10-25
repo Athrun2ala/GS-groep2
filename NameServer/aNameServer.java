@@ -1,11 +1,13 @@
 package NameServer;
 
+import java.net.InetAddress;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 public interface aNameServer extends Remote {
-	void addNode(String anAddress)throws RemoteException;
+	void addNode(InetAddress anAddress, String aName)throws RemoteException;
 	void removeNode(int anID)throws RemoteException;
-	String getLocation(String aFileName)throws RemoteException;
+	InetAddress getLocation(String aFileName)throws RemoteException;
+	Integer getSize() throws RemoteException;
 
 }
