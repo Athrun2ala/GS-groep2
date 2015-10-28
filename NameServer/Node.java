@@ -1,11 +1,7 @@
 package NameServer;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
-import java.net.MulticastSocket;
-import java.net.UnknownHostException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -13,77 +9,70 @@ import java.rmi.server.UnicastRemoteObject;
 
 public class Node extends UnicastRemoteObject implements aNode {
 	private int ringsize;
-	private InetAddress multicastAddress;
-	private MulticastSocket mcSocket;
-	private int port;
+	private aNameServer myNameServer;
+	private int next,previous,myID;
 	private static final long serialVersionUID = 1L;
-	
-	public Node(String aMCAddress,int aPort) throws RemoteException
+
+	public Node() throws RemoteException
 	{
 		try
 		{
-			multicastAddress = InetAddress.getByName(aMCAddress);
+			myID = calculateHash(InetAddress.getLocalHost().getHostName());
 		}
-		catch(Exception e)
-		{
-			System.out.println("Not an Ipaddress!");
-		}
-		port = aPort;
+		catch(Exception e){}
 	}
 
 	@Override
-	public void getAantal(String ServerAddress) 
+	public void initialise(String myAddress,int mySize) 
 	{
-		try 
-		{	
-			aNameServer myNameServer = (aNameServer)Naming.lookup("//"+ServerAddress+"/aNameServer");
-			ringsize=myNameServer.getSize();
-		} catch (MalformedURLException | RemoteException | NotBoundException e) {
-			// TODO Auto-generated catch block
-			System.out.println("Error connecting to the NameServer!");
-		}
-	}
-	
-	public boolean setupMulticast(InetAddress multicastAddress,int port)
-	{
+		ringsize = mySize;
 		try
 		{
-			mcSocket = new MulticastSocket(port);
-			if(multicastAddress.isMulticastAddress())
-			{
-			mcSocket.joinGroup(multicastAddress);
-			return true;
-			}
-			else
-			{
-				System.out.println("Not a multicastAddress!");
-				return false;
-			}
-		}
-		catch(Exception e)
+			myNameServer = (aNameServer)Naming.lookup("rmi://"+myAddress+"/aNameServer");
+		}catch(Exception e){}
+		if(ringsize ==1)
 		{
-			System.out.println("Failed to setup multicast \n");
-			e.printStackTrace();
-			return false;
+			next = myID;
+			previous = myID;
 		}
 	}
-	
-	public void discovery()
+
+	public int calculateHash(String aName)
 	{
-		if(setupMulticast(multicastAddress,port));
+		Hasher myHash = new Hasher();
+		return(myHash.Hash(aName));
+	}
+
+	public void Update(String aName)
+	{
+		int newID = calculateHash(aName);
+		if(myID<newID && newID < next) //ik ben vorige, mijn volgende is zijn volgende
 		{
-			byte[] buf = new byte[1024];
-			try {
-				buf = InetAddress.getLocalHost().getHostName().getBytes();
-				DatagramPacket message = new DatagramPacket(buf,buf.length);
-				mcSocket.send(message);
-			} catch (UnknownHostException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			try
+			{
+				aNode newNode = (aNode)Naming.lookup("rmi://"+myNameServer.getNodeAddress(newID).getHostAddress()+"/Node");
+				newNode.setPrevious(myID);//ik ben de vorige node
+				newNode.setNext(next);//mijn volgende is de volgende van de nieuwe node
+				next = newID; //mijn nieuwe volgende is de nieuwe node
+			}catch(Exception e){System.out.println("Error connecting to node RMI");}
 		}
+		if(previous<newID&&newID<myID) //ik ben de volgende node
+		{
+			//Updateprevious(newID)
+			try
+			{
+				previous = newID;
+			}catch(Exception e){}
+		}
+	}
+
+	public void setNext(int anID)
+	{
+		next = anID;
+	}
+
+	public void setPrevious(int anID)
+	{
+		previous = anID;
 	}
 }

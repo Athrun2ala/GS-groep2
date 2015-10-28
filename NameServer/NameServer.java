@@ -60,6 +60,11 @@ public class NameServer extends UnicastRemoteObject implements aNameServer {
 		}
 		return NodeList.get(NodeID);
 	}
+	
+	public InetAddress getNodeAddress(int anID)
+	{
+		return NodeList.get(anID);
+	}
 
 	public Integer getSize()
 	{

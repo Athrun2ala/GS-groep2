@@ -38,10 +38,10 @@ public class MulticastService implements Runnable {
 			{
 				try 
 				{
-					mcsocket.receive(request);
-					myNameServer.addNode(request.getAddress(), inputbuffer.toString());
-					aNode client = (aNode) Naming.lookup("//"+request.getAddress().getHostAddress()+"/Node");
-					client.getAantal(InetAddress.getLocalHost().getHostAddress());
+					mcsocket.receive(request);	//discovery request
+					myNameServer.addNode(request.getAddress(), inputbuffer.toString());	//voeg node toe aan lijst
+					aNode client = (aNode) Naming.lookup("//"+request.getAddress().getHostAddress()+"/Node");	//maak node RMI object
+					client.initialise(InetAddress.getLocalHost().getHostAddress(),myNameServer.getSize());	//zorg dat node aantal vraagt aan server
 				}
 				catch (IOException e) 
 				{
