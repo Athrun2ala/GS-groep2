@@ -75,4 +75,17 @@ public class Node extends UnicastRemoteObject implements aNode {
 	{
 		previous = anID;
 	}
+	
+	public void Shutdown()
+	{
+		try
+		{
+			aNode nextNode = (aNode)Naming.lookup("rmi://"+myNameServer.getNodeAddress(next).getHostAddress()+"/Node");
+			nextNode.setPrevious(previous);
+			aNode previousNode = (aNode)Naming.lookup("rmi://"+myNameServer.getNodeAddress(previous).getHostAddress()+"/Node");
+			previousNode.setNext(next);
+			myNameServer.removeNode(myID);
+		}
+		catch(Exception e){System.out.println("Error while shutting down!");}
+	}
 }
